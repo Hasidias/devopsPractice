@@ -1,0 +1,11 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - aws --version
+  build:
+    commands:
+      - aws cloudformation validate-template --template-body file://cloudformation/ssm-automation.yaml
+      - aws cloudformation validate-template --template-body file://cloudformation/eventbridge.yaml
+      - aws cloudformation validate-template --template-body file://cloudformation/lifecycle-hook.yaml

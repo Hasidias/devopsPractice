@@ -1,0 +1,9 @@
+Resources:
+  TerminationHook:
+    Type: AWS::AutoScaling::LifecycleHook
+    Properties:
+      AutoScalingGroupName: my-asg
+      LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
+      HeartbeatTimeout: 1800
+      DefaultResult: CONTINUE
+      LifecycleHookName: WindowsTerminationHook

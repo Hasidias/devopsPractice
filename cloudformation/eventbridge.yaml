@@ -1,0 +1,27 @@
+Resources:
+  TerminationRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.autoscaling
+        detail-type:
+          - EC2 Instance-terminate Lifecycle Action
+      Targets:
+        - Id: SSMAutomation
+          Arn: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/ASG-Termination-Windows-Cleanup
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          InputTransformer:
+            InputPathsMap:
+              instanceId: $.detail.EC2InstanceId
+              asg: $.detail.AutoScalingGroupName
+              hook: $.detail.LifecycleHookName
+              token: $.detail.LifecycleActionToken
+            InputTemplate: |
+              {
+                "InstanceId": ["<instanceId>"],
+                "AutoScalingGroupName": ["<asg>"],
+                "LifecycleHookName": ["<hook>"],
+                "LifecycleActionToken": ["<token>"],
+                "AutomationAssumeRole": ["arn:aws:iam::123456789012:role/SSMAutomationRole"]
+              }

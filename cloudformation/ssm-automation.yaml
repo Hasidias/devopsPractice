@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  ASGTerminationAutomation:
+    Type: AWS::SSM::Document
+    Properties:
+      Name: ASG-Termination-Windows-Cleanup
+      DocumentType: Automation
+      Content:
+        schemaVersion: '0.3'
+        assumeRole: "{{ AutomationAssumeRole }}"
+        parameters:
+          InstanceId:
+            type: String
+          AutoScalingGroupName:
+            type: String
+          LifecycleHookName:
+            type: String
+          LifecycleActionToken:
+            type: String
+          AutomationAssumeRole:
+            type: String
+        mainSteps:
+          - name: UnjoinDomain
+            action: aws:runCommand
+            inputs:
+              DocumentName: AWS-RunPowerShellScript
+              InstanceIds:
+                - "{{ InstanceId }}"
+              Parameters:
+                commands:
+                  - Remove-Computer -Force -Restart:$false
+
+          - name: CreateAMI
+            action: aws:createImage
+            inputs:
+              InstanceId: "{{ InstanceId }}"
+              ImageName: "pre-terminate-{{ InstanceId }}"
+              NoReboot: true
+
+          - name: CompleteLifecycle
+            action: aws:executeAwsApi
+            inputs:
+              Service: autoscaling
+              Api: CompleteLifecycleAction
+              LifecycleHookName: "{{ LifecycleHookName }}"
+              AutoScalingGroupName: "{{ AutoScalingGroupName }}"
+              LifecycleActionToken: "{{ LifecycleActionToken }}"
+              LifecycleActionResult: CONTINUE
