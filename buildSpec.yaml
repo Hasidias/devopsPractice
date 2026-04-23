@@ -12,7 +12,7 @@ phases:
       - SSM_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name iam-stack --query "Stacks[0].Outputs[?OutputKey=='SSMAutomationRoleArn'].OutputValue" --output text)
 
       - echo "Deploy SSM"
-      - aws cloudformation deploy --template-file templates/02-ssm.yaml --stack-name ssm-stack 
+      - aws cloudformation deploy --template-file templates/02-ssmrunbook.yaml --stack-name ssm-stack 
 
       - SSM_DOC_NAME=$(aws cloudformation describe-stacks --stack-name ssm-stack --query "Stacks[0].Outputs[?OutputKey=='SSMDocumentName'].OutputValue" --output text)
 
