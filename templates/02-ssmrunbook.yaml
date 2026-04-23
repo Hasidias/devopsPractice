@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+
+  ASGTerminationRunbook:
+    Type: AWS::SSM::Document
+    Properties:
+      Name: ASG-Termination-Automation
+      DocumentType: Automation
+      Content:
+        schemaVersion: '0.3'
+        description: Create AMI, remove from domain, complete lifecycle hook
+        assumeRole: "{{ AutomationAssumeRole }}"
+        
+        parameters:
+          InstanceId:
+            type: String
+          ASGName:
+            type: String
+          LifecycleHookName:
+            type: String 
+          AutomationAssumeRole:
+            type: String
+
+        mainSteps:
+
+          # 1️⃣ Create AMI
+          - name: createAMI
+            action: aws:createImage
+            inputs:
+              InstanceId: "{{ InstanceId }}"
+              ImageName: "Backup-{{ InstanceId }}-{{ global:DATE_TIME }}"
+              NoReboot: true
+
+          # 2️⃣ Remove from domain (Windows)
+          - name: removeFromDomain
+            action: aws:runCommand
+            inputs:
+              DocumentName: AWS-RunPowerShellScript
+              InstanceIds:
+                - "{{ InstanceId }}"
+              Parameters:
+                commands:
+                  - |
+                    Remove-Computer -UnjoinDomaincredential (Get-Credential) -PassThru -Verbose -Force -Restart
+
+          # 3️⃣ Complete Lifecycle Hook
+          - name: completeLifecycle
+            action: aws:executeAwsApi
+            inputs:
+              Service: autoscaling
+              Api: CompleteLifecycleAction
+              AutoScalingGroupName: "{{ ASGName }}"
+              LifecycleHookName: "{{ LifecycleHookName }}"
+              InstanceId: "{{ InstanceId }}"
+              LifecycleActionResult: CONTINUE
+
+    Outputs:
+      SSMDocumentName:
+        Value: !Ref ASGTerminationRunbook

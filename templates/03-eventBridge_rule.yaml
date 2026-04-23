@@ -1,0 +1,41 @@
+
+Parameters:
+  SSMDocumentName:
+    Type: String
+  EventBridgeRoleArn:
+    Type: String
+  AutoScalingGroupName:
+    Type: String
+
+Resources: 
+  Myeventbridgerule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Events Rule with EcsParameters
+      EventPattern:
+        source:
+          - aws.autoscaling
+        detail-type:
+          - EC2 Instance-terminate Lifecycle Action
+        detail:
+          AutoScalingGroupName:
+            - !Ref AutoScalingGroupName
+      State: ENABLED
+      Targets:
+        - Arn: !Ref EventBridgeRoleArn
+          Id: TargetSSMAutomation
+          RoleArn: !GetAtt EventBridgeRole.Arn
+
+          InputTransformer:
+            InputPathsMap:
+              instanceId: $.detail.EC2InstanceId
+              asgName: $.detail.AutoScalingGroupName
+              lifecycleHookName: $.detail.LifecycleHookName
+
+            InputTemplate: |
+              {
+                "InstanceId": <instanceId>,
+                "ASGName": <asgName>,
+                "LifecycleHookName": <lifecycleHookName>,
+                "AutomationAssumeRole": "arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"
+              }

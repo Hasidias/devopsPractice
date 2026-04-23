@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lifecycle Hook for ASG scale-in termination
+
+Parameters:
+  AutoScalingGroupName:
+    Type: String
+    Description: Existing ASG Name
+
+Resources:
+  myAsglifecyclehook:
+    Type: AWS::AutoScaling::LifecycleHook
+    Properties:
+      AutoScalingGroupName: !Ref AutoScalingGroupName
+      DefaultResult: ABANDON
+      HeartbeatTimeout: 3600
+      LifecycleHookName: scale-in-termination-hook
+      LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING

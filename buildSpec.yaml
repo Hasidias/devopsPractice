@@ -1,0 +1,32 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+
+      - echo "Deploy IAM"
+      - aws cloudformation deploy --template-file templates/01-IAM.yaml --stack-name iam-stack --capabilities CAPABILITY_NAMED_IAM
+
+      - EVENTBRIDGE_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name iam-stack --query "Stacks[0].Outputs[?OutputKey=='EventBridgeRoleArn'].OutputValue" --output text)
+
+      - SSM_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name iam-stack --query "Stacks[0].Outputs[?OutputKey=='SSMAutomationRoleArn'].OutputValue" --output text)
+
+      - echo "Deploy SSM"
+      - aws cloudformation deploy --template-file templates/02-ssm.yaml --stack-name ssm-stack 
+
+      - SSM_DOC_NAME=$(aws cloudformation describe-stacks --stack-name ssm-stack --query "Stacks[0].Outputs[?OutputKey=='SSMDocumentName'].OutputValue" --output text)
+
+      - echo "Deploy EventBridge"
+      - aws cloudformation deploy \
+          --template-file templates/03-eventBridge_rule.yaml \
+          --stack-name eventbridge-stack \
+          --parameter-overrides \
+            SSMDocumentName=$SSM_DOC_NAME \
+            EventBridgeRoleArn=$EVENTBRIDGE_ROLE_ARN \
+            AutoScalingGroupName=my-asg
+
+      - echo "Deploy Lifecycle Hook"
+      - aws cloudformation deploy \
+          --template-file templates/04-asg_Hook.yaml \
+          --stack-name lifecycle-stack \
+          --parameter-overrides AutoScalingGroupName=my-asg
