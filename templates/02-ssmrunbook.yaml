@@ -55,6 +55,6 @@ Resources:
               InstanceId: "{{ InstanceId }}"
               LifecycleActionResult: CONTINUE
 
-    Outputs:
-      SSMDocumentName:
-        Value: !Ref ASGTerminationRunbook
+Outputs:
+  SSMDocumentName:
+    Value: !Ref ASGTerminationRunbook
