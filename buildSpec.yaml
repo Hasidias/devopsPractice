@@ -18,17 +18,17 @@ phases:
 
       - echo "Deploy EventBridge"
       - |
-        aws cloudformation deploy \
-          --template-file templates/03-eventBridge_rule.yaml \
-          --stack-name eventbridge-stack \
-          --parameter-overrides \
+          aws cloudformation deploy \
+            --template-file templates/03-eventBridge_rule.yaml \
+            --stack-name eventbridge-stack \
+            --parameter-overrides \
             SSMDocumentName=$SSM_DOC_NAME \
             EventBridgeRoleArn=$EVENTBRIDGE_ROLE_ARN \
             AutoScalingGroupName=Q1-asg
 
       - echo "Deploy Lifecycle Hook"
       - |
-        aws cloudformation deploy \
-          --template-file templates/04-asg_Hook.yaml \
-          --stack-name lifecycle-stack \
-          --parameter-overrides AutoScalingGroupName=Q1-asg
+          aws cloudformation deploy \
+            --template-file templates/04-asg_Hook.yaml \
+            --stack-name lifecycle-stack \
+            --parameter-overrides AutoScalingGroupName=Q1-asg
