@@ -35,8 +35,8 @@ Resources:
 
           InputTemplate: |
             {
-              "InstanceId": <instanceId>,
-              "ASGName": <asgName>,
-              "LifecycleHookName": <lifecycleHookName>,
+              "InstanceId": "<instanceId>",
+              "ASGName": "<asgName>",
+              "LifecycleHookName": "<lifecycleHookName>",
               "AutomationAssumeRole": "arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"
             }
