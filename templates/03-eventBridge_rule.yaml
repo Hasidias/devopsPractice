@@ -1,3 +1,4 @@
+AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
   SSMDocumentName:
@@ -22,9 +23,9 @@ Resources:
             - !Ref AutoScalingGroupName
       State: ENABLED
       Targets:
-        - Arn: !Ref EventBridgeRoleArn
+        - Arn: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SSMDocumentName}
           Id: TargetSSMAutomation
-          RoleArn: !GetAtt EventBridgeRole.Arn
+          RoleArn: !Ref EventBridgeRoleArn
 
           InputTransformer:
             InputPathsMap:
@@ -32,10 +33,10 @@ Resources:
               asgName: $.detail.AutoScalingGroupName
               lifecycleHookName: $.detail.LifecycleHookName
 
-            InputTemplate: |
-              {
-                "InstanceId": <instanceId>,
-                "ASGName": <asgName>,
-                "LifecycleHookName": <lifecycleHookName>,
-                "AutomationAssumeRole": "arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"
-              }
+          InputTemplate: |
+            {
+              "InstanceId": <instanceId>,
+              "ASGName": <asgName>,
+              "LifecycleHookName": <lifecycleHookName>,
+              "AutomationAssumeRole": "arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"
+            }
