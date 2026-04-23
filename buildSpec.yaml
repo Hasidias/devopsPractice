@@ -23,10 +23,10 @@ phases:
           --parameter-overrides \
             SSMDocumentName=$SSM_DOC_NAME \
             EventBridgeRoleArn=$EVENTBRIDGE_ROLE_ARN \
-            AutoScalingGroupName=my-asg
+            AutoScalingGroupName=Q1-asg
 
       - echo "Deploy Lifecycle Hook"
       - aws cloudformation deploy \
           --template-file templates/04-asg_Hook.yaml \
           --stack-name lifecycle-stack \
-          --parameter-overrides AutoScalingGroupName=my-asg
+          --parameter-overrides AutoScalingGroupName=Q1-asg
