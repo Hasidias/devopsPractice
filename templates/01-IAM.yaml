@@ -1,29 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Resources:
-  EventBridgeInvokeSSMRole:
+  EventBridgeRole:
     Type: AWS::IAM::Role
     Properties:
-      EventBridgeRole:
-        Type: AWS::IAM::Role
-        Properties:
-          RoleName: EventBridgeInvokeSSMRole
-          AssumeRolePolicyDocument:
+      RoleName: EventBridgeInvokeSSMRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowStartSSMAutomation
+          PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
-                Principal:
-                  Service: events.amazonaws.com
-                Action: sts:AssumeRole
-          Policies:
-            - PolicyName: AllowStartSSMAutomation
-              PolicyDocument:
-                Version: '2012-10-17'
-                Statement:
-                  - Effect: Allow
-                    Action:
-                      - ssm:StartAutomationExecution
-                    Resource: "*"
+                Action:
+                  - ssm:StartAutomationExecution
+                Resource: "*"
 
   SSMAutomationRole:
     Type: AWS::IAM::Role
@@ -50,7 +47,7 @@ Resources:
 
 Outputs:
   EventBridgeRoleArn:
-    Value: !GetAtt EventBridgeInvokeSSMRole.Arn
+    Value: !GetAtt EventBridgeRole.Arn
 
   SSMAutomationRoleArn:
     Value: !GetAtt SSMAutomationRole.Arn
