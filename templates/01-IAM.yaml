@@ -25,32 +25,32 @@ Resources:
                       - ssm:StartAutomationExecution
                     Resource: "*"
 
-    SSMAutomationRole:
-      Type: AWS::IAM::Role
-      Properties:
-        RoleName: SSMAutomationRole
-        AssumeRolePolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service: ssm.amazonaws.com
-              Action: sts:AssumeRole
-        Policies:
-          - PolicyName: AllowAutomationActions
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - ec2:CreateImage
-                    - ssm:SendCommand
-                    - autoscaling:CompleteLifecycleAction
-                  Resource: "*"
+  SSMAutomationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SSMAutomationRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ssm.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowAutomationActions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:CreateImage
+                  - ssm:SendCommand
+                  - autoscaling:CompleteLifecycleAction
+                Resource: "*"
 
-    Outputs:
-      EventBridgeRoleArn:
-        Value: !GetAtt EventBridgeRole.Arn
+  Outputs:
+    EventBridgeRoleArn:
+      Value: !GetAtt EventBridgeRole.Arn
 
-      SSMAutomationRoleArn:
-        Value: !GetAtt SSMAutomationRole.Arn
+    SSMAutomationRoleArn:
+      Value: !GetAtt SSMAutomationRole.Arn
