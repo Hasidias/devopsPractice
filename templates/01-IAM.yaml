@@ -48,9 +48,9 @@ Resources:
                   - autoscaling:CompleteLifecycleAction
                 Resource: "*"
 
-  Outputs:
-    EventBridgeRoleArn:
-      Value: !GetAtt EventBridgeRole.Arn
+Outputs:
+  EventBridgeRoleArn:
+    Value: !GetAtt EventBridgeRole.Arn
 
-    SSMAutomationRoleArn:
-      Value: !GetAtt SSMAutomationRole.Arn
+  SSMAutomationRoleArn:
+    Value: !GetAtt SSMAutomationRole.Arn
