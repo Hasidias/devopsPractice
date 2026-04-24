@@ -23,7 +23,7 @@ Resources:
             - !Ref AutoScalingGroupName
       State: ENABLED
       Targets:
-        - Arn: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SSMDocumentName}
+        - Arn: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SSMDocumentName}"
           Id: TargetSSMAutomation
           RoleArn: !Ref EventBridgeRoleArn
 
