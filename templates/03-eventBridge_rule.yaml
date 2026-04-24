@@ -33,10 +33,4 @@ Resources:
               asgName: $.detail.AutoScalingGroupName
               lifecycleHookName: $.detail.LifecycleHookName
 
-          InputTemplate: |
-            {
-              "InstanceId": "<instanceId>",
-              "ASGName": "<asgName>",
-              "LifecycleHookName": "<lifecycleHookName>",
-              "AutomationAssumeRole": "arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"
-            }
+            InputTemplate: "{\"InstanceId\":\"<instanceId>\",\"ASGName\":\"<asgName>\",\"LifecycleHookName\":\"<lifecycleHookName>\"}"
