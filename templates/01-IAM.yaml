@@ -25,7 +25,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - iam:PassRole
-                Resource: arn:aws:iam::038462770300:role/SSMAutomationRole
+                Resource: "*"
 
   SSMAutomationRole:
     Type: AWS::IAM::Role
