@@ -29,6 +29,7 @@ Resources:
                   - iam:PassRole
                 Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole
 
+
   SSMAutomationRole:
     Type: AWS::IAM::Role
     Properties:
