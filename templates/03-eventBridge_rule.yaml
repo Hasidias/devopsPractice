@@ -46,22 +46,32 @@ Resources:
           Id: TargetSSMAutomation
           RoleArn: !Ref EventBridgeRoleArn
 
-          InputTransformer:
-            InputPathsMap:
-              instanceId: $.detail.EC2InstanceId
-              asgName: $.detail.AutoScalingGroupName
-              lifecycleHookName: $.detail.LifecycleHookName
+          # InputTransformer:
+          #   InputPathsMap:
+          #     instanceId: $.detail.EC2InstanceId
+          #     asgName: $.detail.AutoScalingGroupName
+          #     lifecycleHookName: $.detail.LifecycleHookName
 
-            InputTemplate: !Sub |
-              {
-                "DocumentName": "${SSMDocumentName}",
-                "Parameters": {
-                  "InstanceId": ["<instanceId>"],
-                  "ASGName": ["<asgName>"],
-                  "LifecycleHookName": ["<lifecycleHookName>"],
-                  "AutomationAssumeRole": ["arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"]
-                }
+          #   InputTemplate: !Sub |
+          #     {
+          #       "DocumentName": "${SSMDocumentName}",
+          #       "Parameters": {
+          #         "InstanceId": ["<instanceId>"],
+          #         "ASGName": ["<asgName>"],
+          #         "LifecycleHookName": ["<lifecycleHookName>"],
+          #         "AutomationAssumeRole": ["arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"]
+          #       }
+          #     }
+          Input: !Sub |
+            {
+              "DocumentName": "${SSMDocumentName}",
+              "Parameters": {
+                "InstanceId": ["i-1234567890abcdef0"],
+                "ASGName": ["Q1-asg"],
+                "LifecycleHookName": ["test-hook"],
+                "AutomationAssumeRole": ["arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"]
               }
+            }
 
           DeadLetterConfig:
             Arn: !GetAtt DLQ.Arn
