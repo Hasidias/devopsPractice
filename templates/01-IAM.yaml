@@ -20,7 +20,9 @@ Resources:
               - Effect: Allow
                 Action:
                   - ssm:StartAutomationExecution
-                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/*
+                Resource: 
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/*
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-execution/*
 
               - Effect: Allow
                 Action:

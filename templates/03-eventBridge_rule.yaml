@@ -35,6 +35,7 @@ Resources:
 
             InputTemplate: !Sub |
               {
+                "DocumentName": "${SSMDocumentName}",
                 "Parameters": {
                   "InstanceId": ["<instanceId>"],
                   "ASGName": ["<asgName>"],
