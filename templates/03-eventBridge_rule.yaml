@@ -62,6 +62,6 @@ Resources:
                   "AutomationAssumeRole": ["arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"]
                 }
               }
-              
-        - DeadLetterConfig:
+
+          DeadLetterConfig:
             Arn: !GetAtt DLQ.Arn
