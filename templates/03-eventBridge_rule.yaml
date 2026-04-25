@@ -9,6 +9,25 @@ Parameters:
     Type: String
 
 Resources: 
+  DLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: eventbridge-dlq
+
+  DLQPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref DLQ
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt DLQ.Arn
+
   Myeventbridgerule:
     Type: AWS::Events::Rule
     Properties:
@@ -43,3 +62,6 @@ Resources:
                   "AutomationAssumeRole": ["arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"]
                 }
               }
+              
+        - DeadLetterConfig:
+            Arn: !GetAtt DLQ.Arn
