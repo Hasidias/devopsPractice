@@ -17,7 +17,7 @@ phases:
       - SSM_DOC_NAME=$(aws cloudformation describe-stacks --stack-name ssm-stack --query "Stacks[0].Outputs[?OutputKey=='SSMDocumentName'].OutputValue" --output text)
 
       - echo "Deploy EventBridge"
-      - aws cloudformation deploy --template-file templates/03-eventBridge_rule.yaml --stack-name eventbridge-stack --parameter-overrides SSMDocumentName=$SSM_DOC_NAME AutoScalingGroupName=Q1-asg
+      - aws cloudformation deploy --template-file templates/03-eventBridge_rule.yaml --stack-name eventbridge-stack --parameter-overrides SSMDocumentName=$SSM_DOC_NAME AutoScalingGroupName=Q1-asg --capabilities CAPABILITY_NAMED_IAM
 
       - echo "Deploy Lifecycle Hook"
       - |
