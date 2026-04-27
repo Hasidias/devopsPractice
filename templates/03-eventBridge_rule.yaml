@@ -3,35 +3,103 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   SSMDocumentName:
     Type: String
-  EventBridgeRoleArn:
-    Type: String
+    Default: ASG-Termination-Automation
+
   AutoScalingGroupName:
     Type: String
+    Default: Q1-asg
 
-Resources: 
-  DLQ:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: eventbridge-dlq
+Resources:
 
-  DLQPolicy:
-    Type: AWS::SQS::QueuePolicy
+  # 🔹 Lambda Execution Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
     Properties:
-      Queues:
-        - !Ref DLQ
-      PolicyDocument:
+      RoleName: LambdaSSMInvokeRole
+      AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
-              Service: events.amazonaws.com
-            Action: sqs:SendMessage
-            Resource: !GetAtt DLQ.Arn
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaSSMPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:StartAutomationExecution
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:document/${SSMDocumentName}
 
-  Myneweventbridgerule:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  # 🔹 Lambda Function
+  EventBridgeToSSMLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: EventBridgeToSSM
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+
+          ssm = boto3.client('ssm')
+
+          def lambda_handler(event, context):
+              print("Received event:", event)
+
+              detail = event.get('detail', {})
+
+              instance_id = detail.get('EC2InstanceId')
+              asg_name = detail.get('AutoScalingGroupName')
+              lifecycle_hook = detail.get('LifecycleHookName')
+
+              if not instance_id:
+                  raise Exception("Missing EC2InstanceId in event")
+
+              response = ssm.start_automation_execution(
+                  DocumentName=os.environ['DOCUMENT_NAME'],
+                  Parameters={
+                      'InstanceId': [instance_id],
+                      'ASGName': [asg_name],
+                      'LifecycleHookName': [lifecycle_hook],
+                      'AutomationAssumeRole': [f"arn:aws:iam::{context.invoked_function_arn.split(':')[4]}:role/SSMAutomationRole"]
+                  }
+              )
+
+              print("SSM Automation started:", response)
+              return response
+
+      Environment:
+        Variables:
+          DOCUMENT_NAME: !Ref SSMDocumentName
+
+  # 🔹 Permission for EventBridge to invoke Lambda
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EventBridgeToSSMLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+
+  # 🔹 EventBridge Rule
+  EventBridgeRule:
     Type: AWS::Events::Rule
     Properties:
-      Description: Events Rule with EcsParameters
+      Name: ASGTerminationRule
+      Description: Trigger Lambda on ASG termination lifecycle
+      State: ENABLED
       EventPattern:
         source:
           - aws.autoscaling
@@ -40,28 +108,13 @@ Resources:
         detail:
           AutoScalingGroupName:
             - !Ref AutoScalingGroupName
-      State: ENABLED
       Targets:
-        - Arn: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:document/${SSMDocumentName}"
-          Id: TargetSSMAutomation
-          RoleArn: !Ref EventBridgeRoleArn
+        - Arn: !GetAtt EventBridgeToSSMLambda.Arn
+          Id: LambdaTarget
 
-          InputTransformer:
-            InputPathsMap:
-              instanceId: $.detail.EC2InstanceId
-              asgName: $.detail.AutoScalingGroupName
-              lifecycleHookName: $.detail.LifecycleHookName
+Outputs:
+  LambdaFunctionName:
+    Value: !Ref EventBridgeToSSMLambda
 
-            InputTemplate: !Sub |
-              {
-                "DocumentName": "${SSMDocumentName}",
-                "Parameters": {
-                  "InstanceId": ["<instanceId>"],
-                  "ASGName": ["<asgName>"],
-                  "LifecycleHookName": ["<lifecycleHookName>"],
-                  "AutomationAssumeRole": ["arn:aws:iam::${AWS::AccountId}:role/SSMAutomationRole"]
-                }
-              }
-
-          DeadLetterConfig:
-            Arn: !GetAtt DLQ.Arn
+  EventRuleName:
+    Value: !Ref EventBridgeRule
