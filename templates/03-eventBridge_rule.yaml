@@ -42,6 +42,11 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "*"
 
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: arn:aws:iam::038462770300:role/SSMAutomationRole
+
   # 🔹 Lambda Function
   EventBridgeToSSMLambda:
     Type: AWS::Lambda::Function
