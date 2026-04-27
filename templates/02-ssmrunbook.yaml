@@ -23,6 +23,17 @@ Resources:
             type: String
 
         mainSteps:
+          - name: waitForInstanceRunning
+            action: aws:waitForAwsResourceProperty
+            inputs:
+              Service: ec2
+              Api: DescribeInstances
+              InstanceIds:
+                - "{{ InstanceId }}"
+              PropertySelector: "$.Reservations[0].Instances[0].State.Name"
+              DesiredValues:
+                - running
+                - stopped
 
           # 1️⃣ Create AMI
           - name: createAMI
