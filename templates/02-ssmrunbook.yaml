@@ -23,6 +23,14 @@ Resources:
             type: String
 
         mainSteps:
+          - name: heartbeat
+            action: aws:executeAwsApi
+            inputs:
+              Service: autoscaling
+              Api: RecordLifecycleActionHeartbeat
+              AutoScalingGroupName: "{{ ASGName }}"
+              LifecycleHookName: "{{ LifecycleHookName }}"
+              InstanceId: "{{ InstanceId }}"
           - name: checkInstanceState
             action: aws:executeAwsApi
             inputs:
