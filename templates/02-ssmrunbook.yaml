@@ -53,7 +53,13 @@ Resources:
                 - Variable: "{{ checkInstanceState.InstanceState }}"
                   StringEquals: stopped
                   NextStep: createAMI
-              Default: completeLifecycle
+              Default: waitAndRetry
+          
+          - name: waitAndRetry
+            action: aws:sleep
+            inputs:
+              Duration: PT30S
+            nextStep: heartbeat
 
           # 1️⃣ Create AMI
           - name: createAMI
