@@ -23,17 +23,29 @@ Resources:
             type: String
 
         mainSteps:
-          - name: waitForInstanceRunning
-            action: aws:waitForAwsResourceProperty
+          - name: checkInstanceState
+            action: aws:executeAwsApi
             inputs:
               Service: ec2
               Api: DescribeInstances
               InstanceIds:
                 - "{{ InstanceId }}"
-              PropertySelector: "$.Reservations[0].Instances[0].State.Name"
-              DesiredValues:
-                - running
-                - stopped
+            outputs:
+              - Name: InstanceState
+                Selector: "$.Reservations[0].Instances[0].State.Name"
+                Type: String
+
+          - name: verifyInstanceAlive
+            action: aws:branch
+            inputs:
+              Choices:
+                - Variable: "{{ checkInstanceState.InstanceState }}"
+                  StringEquals: running
+                  NextStep: createAMI
+                - Variable: "{{ checkInstanceState.InstanceState }}"
+                  StringEquals: stopped
+                  NextStep: createAMI
+              Default: completeLifecycle
 
           # 1️⃣ Create AMI
           - name: createAMI
