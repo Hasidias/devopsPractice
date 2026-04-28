@@ -60,6 +60,27 @@ Resources:
                   - autoscaling:CompleteLifecycleAction
                 Resource: "*"
 
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ec2:CreateImage
+                  - ec2:DescribeImages
+                  - ec2:CreateTags
+                Resource: "*"
+
+              - Effect: Allow
+                Action:
+                  - autoscaling:CompleteLifecycleAction
+                  - autoscaling:RecordLifecycleActionHeartbeat
+                  - autoscaling:DescribeAutoScalingInstances
+                Resource: "*"
+
+              - Effect: Allow
+                Action:
+                  - ssm:SendCommand
+                  - ssm:GetCommandInvocation
+                Resource: "*"
+
 Outputs:
   EventBridgeRoleArn:
     Value: !GetAtt EventBridgeRole.Arn
